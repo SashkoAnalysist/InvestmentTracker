@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:MauiApp1.ViewModels"
+             xmlns:models="clr-namespace:MauiApp1.Models"
+             x:Class="MauiApp1.Views.PortfolioPage"
+             x:DataType="vm:PortfolioViewModel"
+             Title="Інвестиційний портфель">
+
+    <Grid RowDefinitions="Auto, *" Padding="16" RowSpacing="16">
+
+        <!-- Форма введення -->
+        <VerticalStackLayout Grid.Row="0" Spacing="8">
+            <Label Text="Додати актив до портфеля" 
+                   FontAttributes="Bold" 
+                   FontSize="16" />
+
+            <Entry Placeholder="Назва активу (наприклад, Apple)" 
+                   Text="{Binding NewName}" />
+
+            <Entry Placeholder="Тікер (наприклад, AAPL)" 
+                   Text="{Binding NewSymbol}" />
+
+            <Entry Placeholder="Кількість" 
+                   Text="{Binding NewAmount}" 
+                   Keyboard="Numeric" />
+
+            <Entry Placeholder="Ціна за одиницю ($)" 
+                   Text="{Binding NewPrice}" 
+                   Keyboard="Numeric" />
+
+            <Button Text="Додати до портфеля" 
+                    Command="{Binding AddAssetCommand}" 
+                    Margin="0,8,0,0" />
+        </VerticalStackLayout>
+
+        <!-- Список активів -->
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Assets}">
+            <CollectionView.EmptyView>
+                <Label Text="Портфель порожній. Додайте перший актив!" 
+                       HorizontalOptions="Center" 
+                       VerticalOptions="Center" 
+                       TextColor="Gray" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Asset">
+                    <Border Stroke="#CCCCCC" StrokeShape="RoundRectangle 8" Padding="12" Margin="0,4">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <VerticalStackLayout Grid.Column="0">
+                                <HorizontalStackLayout Spacing="6">
+                                    <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="16" />
+                                    <Label Text="{Binding Symbol}" TextColor="Gray" FontSize="14" VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="4">
+                                    <Label Text="Кількість:" TextColor="#555555" />
+                                    <Label Text="{Binding Amount}" TextColor="#555555" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="1" HorizontalOptions="End">
+                                <HorizontalStackLayout HorizontalOptions="End">
+                                    <Label Text="$" FontAttributes="Bold" FontSize="16" TextColor="#007ACC" />
+                                    <Label Text="{Binding TotalValue}" FontAttributes="Bold" FontSize="16" TextColor="#007ACC" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout HorizontalOptions="End">
+                                    <Label Text="$" FontSize="12" TextColor="Gray" />
+                                    <Label Text="{Binding CurrentPrice}" FontSize="12" TextColor="Gray" />
+                                    <Label Text=" / шт" FontSize="12" TextColor="Gray" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>
