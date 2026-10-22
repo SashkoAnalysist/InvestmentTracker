@@ -1,11 +1,23 @@
-﻿namespace MauiApp1.Models;
+﻿using SQLite;
 
+namespace MauiApp1.Models;
+
+[Table("Assets")]
 public class Asset
 {
-    public string Name { get; set; } = string.Empty;       // Назва активу (наприклад, Bitcoin, Apple)
-    public string Symbol { get; set; } = string.Empty;     // Тікер (BTC, AAPL, USD)
-    public decimal Amount { get; set; }                    // Кількість у портфелі
-    public decimal CurrentPrice { get; set; }              // Ціна за одиницю
+    [PrimaryKey, AutoIncrement]
+    public int Id { get; set; }
 
-    public decimal TotalValue => Amount * CurrentPrice;    // Загальна вартість
+    [NotNull]
+    public string Name { get; set; } = string.Empty;
+
+    [NotNull, MaxLength(10)]
+    public string Symbol { get; set; } = string.Empty;
+
+    public decimal Amount { get; set; }
+
+    public decimal CurrentPrice { get; set; }
+
+    [Ignore]
+    public decimal TotalValue => Amount * CurrentPrice;
 }

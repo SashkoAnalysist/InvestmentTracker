@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:MauiApp1.ViewModels"
+             x:Class="MauiApp1.Views.AssetDetailPage"
+             x:DataType="vm:AssetDetailViewModel"
+             Title="Редагування активу">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+            <Border Stroke="#007ACC" StrokeShape="RoundRectangle 10" Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="{Binding Name}" FontSize="22" FontAttributes="Bold" />
+                        <Label Text="{Binding Symbol}" FontSize="18" TextColor="Gray" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
+                    <Label Text="Кількість:" FontSize="13" TextColor="Gray" />
+                    <Entry Text="{Binding Amount}" Keyboard="Numeric" />
+
+                    <Label Text="Ціна за одиницю ($):" FontSize="13" TextColor="Gray" />
+                    <Entry Text="{Binding Price}" Keyboard="Numeric" />
+
+                    <Label Text="{Binding TotalValue, StringFormat='Сумарна вартість: ${0:F2}'}" 
+                           FontSize="18" FontAttributes="Bold" TextColor="#007ACC" Margin="0,8,0,0" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Кнопка збереження змін у базі SQLite -->
+            <Button Text="Зберегти зміни" 
+                    Command="{Binding SaveChangesCommand}" 
+                    BackgroundColor="#28A745" 
+                    TextColor="White" 
+                    FontAttributes="Bold" />
+
+            <!-- Кнопка видалення запису з бази SQLite -->
+            <Button Text="Видалити актив" 
+                    Command="{Binding DeleteCommand}" 
+                    BackgroundColor="#DC3545" 
+                    TextColor="White" />
+
+            <!-- Кнопка повернення назад -->
+            <Button Text="Повернутися назад" 
+                    Command="{Binding GoBackCommand}" 
+                    BackgroundColor="#6C757D" 
+                    TextColor="White" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

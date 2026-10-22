@@ -46,6 +46,11 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Asset">
                     <Border Stroke="#CCCCCC" StrokeShape="RoundRectangle 8" Padding="12" Margin="0,4">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer 
+                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PortfolioViewModel}}, Path=SelectAssetCommand}"
+                CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
                         <Grid ColumnDefinitions="*, Auto">
                             <VerticalStackLayout Grid.Column="0">
                                 <HorizontalStackLayout Spacing="6">

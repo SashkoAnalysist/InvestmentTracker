@@ -1,10 +1,13 @@
-﻿namespace MauiApp1
+﻿using MauiApp1.Views;
+
+namespace MauiApp1;
+
+public partial class AppShell : Shell
 {
-    public partial class AppShell : Shell
+    public AppShell()
     {
-        public AppShell()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+
+        Routing.RegisterRoute(nameof(AssetDetailPage), typeof(AssetDetailPage));
     }
 }
