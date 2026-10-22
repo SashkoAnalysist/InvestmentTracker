@@ -47,6 +47,8 @@ public partial class AssetDetailViewModel : ObservableObject, IQueryAttributable
     }
 
     private decimal _price;
+    internal Asset CurrentAsset;
+
     public decimal Price
     {
         get => _price;

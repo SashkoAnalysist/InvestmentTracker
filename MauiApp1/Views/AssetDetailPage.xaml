@@ -1,49 +1,42 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:MauiApp1.ViewModels"
              x:Class="MauiApp1.Views.AssetDetailPage"
-             x:DataType="vm:AssetDetailViewModel"
-             Title="Редагування активу">
+             Title="Деталі активу">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="16">
-            <Border Stroke="#007ACC" StrokeShape="RoundRectangle 10" Padding="16">
-                <VerticalStackLayout Spacing="12">
-                    <HorizontalStackLayout Spacing="8">
-                        <Label Text="{Binding Name}" FontSize="22" FontAttributes="Bold" />
-                        <Label Text="{Binding Symbol}" FontSize="18" TextColor="Gray" VerticalOptions="Center" />
-                    </HorizontalStackLayout>
+    <ScrollView Padding="20">
+        <VerticalStackLayout Spacing="15">
+            <!-- Інформація про актив -->
+            <Label x:Name="AssetNameLabel" Text="Актив: Ethereum (ETH)" FontSize="22" FontAttributes="Bold" TextColor="#1B365D" />
+            <Label x:Name="AssetAmountLabel" Text="Кількість: 1.5 | Баланс: 15 000,00 ₴" FontSize="16" TextColor="#555555" />
 
-                    <Label Text="Кількість:" FontSize="13" TextColor="Gray" />
-                    <Entry Text="{Binding Amount}" Keyboard="Numeric" />
+            <BoxView HeightRequest="1" Color="#D0D7DE" Margin="0,5" />
 
-                    <Label Text="Ціна за одиницю ($):" FontSize="13" TextColor="Gray" />
-                    <Entry Text="{Binding Price}" Keyboard="Numeric" />
-
-                    <Label Text="{Binding TotalValue, StringFormat='Сумарна вартість: ${0:F2}'}" 
-                           FontSize="18" FontAttributes="Bold" TextColor="#007ACC" Margin="0,8,0,0" />
-                </VerticalStackLayout>
-            </Border>
-
-            <!-- Кнопка збереження змін у базі SQLite -->
-            <Button Text="Зберегти зміни" 
-                    Command="{Binding SaveChangesCommand}" 
-                    BackgroundColor="#28A745" 
+            <!-- Блок GPS -->
+            <Label Text="Геолокація операції купівлі:" FontAttributes="Bold" FontSize="16" />
+            <Label x:Name="LocationStatusLabel" Text="Координати ще не отримано" TextColor="#666666" FontSize="14" />
+            <Button Text="Отримати координати (GPS)" 
+                    Clicked="OnGetLocationClicked" 
+                    BackgroundColor="#0288D1" 
                     TextColor="White" 
-                    FontAttributes="Bold" />
+                    HeightRequest="42" />
 
-            <!-- Кнопка видалення запису з бази SQLite -->
-            <Button Text="Видалити актив" 
-                    Command="{Binding DeleteCommand}" 
-                    BackgroundColor="#DC3545" 
-                    TextColor="White" />
+            <BoxView HeightRequest="1" Color="#D0D7DE" Margin="0,5" />
 
-            <!-- Кнопка повернення назад -->
-            <Button Text="Повернутися назад" 
-                    Command="{Binding GoBackCommand}" 
-                    BackgroundColor="#6C757D" 
-                    TextColor="White" />
+            <!-- Блок Камери -->
+            <Label Text="Фотофіксація чека / квитанції:" FontAttributes="Bold" FontSize="16" />
+            <Button Text="Зробити фото квитанції (Камера)" 
+                    Clicked="OnCapturePhotoClicked" 
+                    BackgroundColor="#2E7D32" 
+                    TextColor="White" 
+                    HeightRequest="42" />
+
+            <Border Stroke="#CCCCCC" StrokeThickness="1" HeightRequest="220" Margin="0,10" BackgroundColor="#FAFAFA">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="8" />
+                </Border.StrokeShape>
+                <Image x:Name="ReceiptImageView" Aspect="AspectFit" />
+            </Border>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

@@ -4,6 +4,7 @@ using MauiApp1.Helpers;
 using MauiApp1.Models;
 using MauiApp1.Services;
 using MauiApp1.Views;
+using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
@@ -11,10 +12,14 @@ namespace MauiApp1.ViewModels;
 
 public partial class PortfolioViewModel : ObservableObject, ILifecycleAware
 {
-    private const string DraftKey = "Draft_Asset_Name";
-    private readonly IAssetRepository _repository;
+    private const string DraftKey = "AssetDraft_Name";
 
-    public ObservableCollection<Asset> Assets { get; } = new();
+    private readonly IAssetRepository _repository;
+    private readonly IAuthService _authService;
+    private readonly ILogger<PortfolioViewModel> _logger;
+
+    [ObservableProperty]
+    private ObservableCollection<Asset> _assets = new();
 
     [ObservableProperty]
     private string _newName = string.Empty;
@@ -31,83 +36,26 @@ public partial class PortfolioViewModel : ObservableObject, ILifecycleAware
     [ObservableProperty]
     private bool _isLoading;
 
-    public PortfolioViewModel(IAssetRepository repository)
+    // Властивість для відображення кнопок видалення (доступно лише Admin)
+    [ObservableProperty]
+    private bool _canDelete;
+
+    // Інформаційний рядок поточного користувача
+    [ObservableProperty]
+    private string _currentUserInfo = string.Empty;
+
+    public PortfolioViewModel(IAssetRepository repository, IAuthService authService, ILogger<PortfolioViewModel> logger)
     {
         _repository = repository;
-    }
-
-    [RelayCommand]
-    public async Task LoadAssetsAsync()
-    {
-        if (IsLoading)
-            return;
-
-        try
-        {
-            IsLoading = true;
-            var items = await _repository.GetAllAsync();
-
-            Assets.Clear();
-            foreach (var item in items)
-            {
-                Assets.Add(item);
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Помилка завантаження даних із SQLite: {ex.Message}");
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
-
-    [RelayCommand]
-    private async Task AddAssetAsync()
-    {
-        if (string.IsNullOrWhiteSpace(NewName) || string.IsNullOrWhiteSpace(NewSymbol))
-            return;
-
-        var asset = new Asset
-        {
-            Name = NewName,
-            Symbol = NewSymbol.ToUpper(),
-            Amount = NewAmount,
-            CurrentPrice = NewPrice
-        };
-
-        await _repository.InsertAsync(asset);
-
-        NewName = string.Empty;
-        NewSymbol = string.Empty;
-        NewAmount = 0;
-        NewPrice = 0;
-
-        Preferences.Default.Remove(DraftKey);
-
-        await LoadAssetsAsync();
-    }
-
-    [RelayCommand]
-    private async Task SelectAssetAsync(Asset? selectedAsset)
-    {
-        if (selectedAsset is null)
-            return;
-
-        var route = $"{nameof(AssetDetailPage)}?" +
-                    $"Id={selectedAsset.Id}&" +
-                    $"Name={Uri.EscapeDataString(selectedAsset.Name)}&" +
-                    $"Symbol={Uri.EscapeDataString(selectedAsset.Symbol)}&" +
-                    $"Amount={selectedAsset.Amount}&" +
-                    $"Price={selectedAsset.CurrentPrice}";
-
-        await Shell.Current.GoToAsync(route);
+        _authService = authService;
+        _logger = logger;
     }
 
     public async void OnAppearing()
     {
         Debug.WriteLine("--> [LifecycleAware] PortfolioPage OnAppearing");
+
+        UpdateUserRoleState();
 
         if (string.IsNullOrEmpty(NewName))
         {
@@ -130,6 +78,105 @@ public partial class PortfolioViewModel : ObservableObject, ILifecycleAware
         {
             Preferences.Default.Set(DraftKey, NewName);
             Debug.WriteLine($"--> [Preferences] Збережено чорновик: {NewName}");
+        }
+    }
+
+    public void UpdateUserRoleState()
+    {
+        CanDelete = _authService.IsAdmin;
+        CurrentUserInfo = _authService.CurrentUser != null
+            ? $"Користувач: {_authService.CurrentUser.Username} ({_authService.CurrentUser.Role})"
+            : "Гість (Viewer)";
+    }
+
+    [RelayCommand]
+    public async Task LoadAssetsAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            UpdateUserRoleState();
+
+            var items = await _repository.GetAllAsync();
+            Assets.Clear();
+            foreach (var item in items)
+            {
+                Assets.Add(item);
+            }
+            _logger.LogInformation("Завантажено {Count} активів.", Assets.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Помилка під час завантаження активів.");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task AddAssetAsync()
+    {
+        if (string.IsNullOrWhiteSpace(NewName) || string.IsNullOrWhiteSpace(NewSymbol) || NewAmount <= 0 || NewPrice <= 0)
+        {
+            return;
+        }
+
+        var asset = new Asset
+        {
+            Name = NewName,
+            Symbol = NewSymbol.ToUpper(),
+            Amount = NewAmount,
+            CurrentPrice = NewPrice
+        };
+
+        var result = await _repository.InsertAsync(asset);
+        if (result > 0)
+        {
+            NewName = string.Empty;
+            NewSymbol = string.Empty;
+            NewAmount = 0;
+            NewPrice = 0;
+            Preferences.Default.Remove(DraftKey);
+            await LoadAssetsAsync();
+        }
+    }
+
+    // Крок 3 методички: Перевірка ролі безпосередньо в тілі команди ViewModel
+    [RelayCommand]
+    public async Task DeleteAssetAsync(Asset? asset)
+    {
+        if (asset == null) return;
+
+        if (!_authService.IsAdmin)
+        {
+            _logger.LogWarning("Спроба несанкціонованого видалення користувачем без ролі Admin.");
+            if (Shell.Current != null)
+            {
+                await Shell.Current.DisplayAlert("Доступ заборонено", "Операція видалення доступна лише для ролі Admin!", "OK");
+            }
+            return;
+        }
+
+        var deleted = await _repository.DeleteAsync(asset);
+        if (deleted > 0)
+        {
+            Assets.Remove(asset);
+            _logger.LogInformation("Актив {Symbol} успішно видалено адміністратором.", asset.Symbol);
+        }
+    }
+
+    [RelayCommand]
+    public async Task SelectAssetAsync(Asset? asset)
+    {
+        if (asset == null) return;
+        if (Shell.Current != null)
+        {
+            await Shell.Current.GoToAsync(nameof(AssetDetailPage), new Dictionary<string, object>
+            {
+                { "Asset", asset }
+            });
         }
     }
 }

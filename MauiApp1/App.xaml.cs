@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using MauiApp1.Views;
 
 namespace MauiApp1;
 
@@ -12,7 +13,11 @@ public partial class App : Application
     protected override Window CreateWindow(IActivationState? activationState)
     {
         Debug.WriteLine("--> [App Lifecycle] CreateWindow викликано");
-        var window = new Window(new AppShell());
+
+        var portfolioPage = Handler?.MauiContext?.Services.GetRequiredService<PortfolioPage>()
+                            ?? IPlatformApplication.Current!.Services.GetRequiredService<PortfolioPage>();
+
+        var window = new Window(new NavigationPage(portfolioPage));
 
         window.Created += (s, e) => Debug.WriteLine("--> [App Lifecycle] Window Created");
         window.Activated += (s, e) => Debug.WriteLine("--> [App Lifecycle] Window Activated");

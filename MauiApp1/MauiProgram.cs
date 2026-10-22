@@ -1,5 +1,5 @@
-﻿using MauiApp1.Helpers;
-using MauiApp1.Services;
+﻿using MauiApp1.Services;
+using MauiApp1.Helpers;
 using MauiApp1.ViewModels;
 using MauiApp1.Views;
 using Microsoft.Extensions.Logging;
@@ -45,10 +45,14 @@ public static class MauiProgram
 
         // 3. Реєстрація репозиторію та сервісів (Singleton)
         builder.Services.AddSingleton<IAssetRepository, DatabaseService>();
+        builder.Services.AddSingleton<IAuthService, AuthService>();
+        builder.Services.AddSingleton<ICameraService, CameraService>();
+        builder.Services.AddSingleton<IGeolocationService, GeolocationService>();
 
         // 4. Реєстрація ViewModel та Pages
         builder.Services.AddSingleton<PortfolioViewModel>();
         builder.Services.AddSingleton<PortfolioPage>();
+        builder.Services.AddSingleton<App>();
 
         builder.Services.AddTransient<AssetDetailViewModel>();
         builder.Services.AddTransient<AssetDetailPage>();
@@ -56,3 +60,4 @@ public static class MauiProgram
         return builder.Build();
     }
 }
+
